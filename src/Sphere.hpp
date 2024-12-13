@@ -12,7 +12,7 @@ public:
     float radius; // 半径
 public:
     Sphere(const Vec3 &center, float radius) : center(center), radius(radius) {}
-    
+
     // 方程代入求解是否相交 通过参数返回较近的交点对应的光线时间 t
     bool intersect(const Ray &r, float &t) const
     {

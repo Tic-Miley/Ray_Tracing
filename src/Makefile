@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17
+CXXFLAGS = -std=c++17 
 
 TARGET = RayTracer
 SRC = main.cpp Trace.cpp Scene.cpp

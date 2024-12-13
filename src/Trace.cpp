@@ -34,7 +34,7 @@ void storeColor(std::vector<unsigned char> &color_buffer, const Vec3 &color, con
 // 光线追踪主函数
 void PathTracing(Scene &scene)
 {
-    Vec3 camPos(0, 0, 0);
+    Vec3 camPos(0, 0, 0); // 照相机暂时固定为原点
     for (int j = 0; j < scene.height; j++)
     {
         for (int i = 0; i < scene.width; i++)
@@ -45,7 +45,7 @@ void PathTracing(Scene &scene)
             Vec3 dir = Vec3(x, y, -1).normalize(); // dir 单位化
             Ray ray(camPos, dir);
             Vec3 color = trace(ray, scene.objects);
-            storeColor(scene.color_buffer, color, j * scene.width + i);
+            storeColor(scene.color_buffer, color, (j * scene.width + i) * 3);
         }
     }
 }
