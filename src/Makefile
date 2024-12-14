@@ -13,4 +13,4 @@ clean:
 	del $(TARGET).exe
 
 run: $(TARGET)
-	./$(TARGET)
+	./$(TARGET) $(args)

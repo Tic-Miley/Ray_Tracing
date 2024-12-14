@@ -39,13 +39,22 @@ void PathTracing(Scene &scene)
     {
         for (int i = 0; i < scene.width; i++)
         {
-            // 生成光线     // i \in [0,width-1] 映射到 x \in [-1,1]
-            float x = (i - scene.width / 2.0) / (scene.width / 2.0);
-            float y = -(j - scene.height / 2.0) / (scene.height / 2.0);
+            // 生成光线 ray
+            // 将坐标归一化到 [-1,1]
+            float x = 2.0 * i / scene.width - 1.0;
+            float y = -2.0 * j / scene.height + 1.0;
+            // 将坐标缩放到 z=-1 平面
+            float scale = std::tan(rad(scene.visualAngle / 2.0));         // 二分视角的正切
+            float ratio = static_cast<float>(scene.width) / scene.height; // 屏幕的宽高比
+            x = x * scale * ratio;                                        // 按比例放大 x
+            y = y * scale;
             Vec3 dir = Vec3(x, y, -1).normalize(); // dir 单位化
             Ray ray(camPos, dir);
+
             Vec3 color = trace(ray, scene.objects);
-            storeColor(scene.color_buffer, color, (j * scene.width + i) * 3);
+
+            int index = (j * scene.width + i) * 3;
+            storeColor(scene.color_buffer, color, index);
         }
     }
 }
