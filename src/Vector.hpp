@@ -22,6 +22,13 @@ public:
     // 点乘
     float dot(const Vec3 &v) const { return x * v.x + y * v.y + z * v.z; }
     float operator*(const Vec3 &v) const { return x * v.x + y * v.y + z * v.z; }
+
+    // 叉乘
+    Vec3 cross(const Vec3 &v) const
+    {
+        return Vec3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+    }
+
     Vec3 operator/(const float &d) const { return Vec3(x / d, y / d, z / d); }
     Vec3 normalize() const
     {

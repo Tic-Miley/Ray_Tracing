@@ -5,29 +5,29 @@
 #include <cmath>
 
 // 光线与场景中的所有物体的相交判断 输入光线、物体和光源坐标 并返回光线颜色 暂时使用朗伯反射模型实现效果
-Vec3 trace(const Ray &r, const std::vector<std::unique_ptr<Sphere>> &spheres, const Vec3 &light)
+Vec3 trace(const Ray &r, const std::vector<std::unique_ptr<Object>> &objects, const Vec3 &light)
 {
     float t = MAXf;                          // 获取最近的相交时间
     Vec3 color(0.235294, 0.67451, 0.843137); // 背景色
-    // 遍历所有物体（暂时只为球体）
-    for (const auto &sphere : spheres)
+    // 遍历所有物体
+    for (const auto &object : objects)
     {
         float dist;
-        if (sphere->intersect(r, dist) && dist < t)
+        if (object->intersect(r, dist) && dist < t)
         {
             t = dist; // 更新最近相交时间
 
             // 暂时 每相交一次都计算光线颜色 需要后续为物体编序号
             Vec3 point = r.orig + r.dir * t;                                                                      // 交点坐标
-            Vec3 normalVector = (point - sphere->center).normalize();                                             // 法向量
+            Vec3 normalVector = object->getNormalVector(point);                                                   // 法向量
             Vec3 lightVector = (light - point).normalize();                                                       // 光源方向
             Vec3 viewVector = (r.orig - point).normalize();                                                       // 照相机方向
             Vec3 reflectVector = (normalVector * 2.0f * lightVector.dot(normalVector) - lightVector).normalize(); // 反射光线方向
 
-            Vec3 ambient = sphere->color * 0.1f; // 环境光
+            Vec3 ambient = object->color * 0.1f; // 环境光
 
             float diff = std::max(0.0f, normalVector.dot(lightVector));
-            Vec3 diffuse = sphere->color * diff * 0.8f; // 漫反射光
+            Vec3 diffuse = object->color * diff * 0.8f; // 漫反射光
 
             float spec = pow(std::max(0.0f, viewVector.dot(reflectVector)), 5);
             Vec3 specular = Vec3(1.0, 1.0, 1.0) * spec * 0.5f; // 反射光
@@ -56,7 +56,6 @@ void storeColor(std::vector<unsigned char> &color_buffer, const Vec3 &color, con
 // 光线追踪主函数 生成光线
 void PathTracing(Scene &scene)
 {
-    Vec3 camPos(0, 0, 0); // 照相机暂时固定为原点
     for (int j = 0; j < scene.height; j++)
     {
         for (int i = 0; i < scene.width; i++)
@@ -71,7 +70,7 @@ void PathTracing(Scene &scene)
             x = x * scale * ratio;                                        // 按比例放大 x
             y = y * scale;
             Vec3 dir = Vec3(x, y, -1).normalize(); // dir 单位化
-            Ray ray(camPos, dir);
+            Ray ray(scene.camPos, dir);
 
             Vec3 color = trace(ray, scene.objects, scene.light);
 
