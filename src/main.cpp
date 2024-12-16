@@ -35,7 +35,7 @@ inline void creatObjects(Scene &scene)
 // 命令为 main <filename>
 int main(int argc, const char *argv[])
 {
-    Scene scene(800, 600);
+    Scene scene(500, 500);
 
     creatObjects(scene);
 
@@ -45,8 +45,6 @@ int main(int argc, const char *argv[])
     if (argc > 1)
         filename = argv[1];
     scene.print(filename);
-    // for(int i = 0;i<scene.objects.size();++i)
-    //     std::cout<<scene.objects[i]->color.x;
 
     return 0;
 }

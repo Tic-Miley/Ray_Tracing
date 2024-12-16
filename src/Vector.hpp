@@ -16,8 +16,8 @@ public:
     Vec3 operator-(const Vec3 &v) const { return Vec3(x - v.x, y - v.y, z - v.z); }
 
     // 数乘
-    Vec3 operator*(const float &d) const { return Vec3(x * d, y * d, z * d); }
-    friend Vec3 operator*(const float &d, const Vec3 &v) { return Vec3(v.x * d, v.y * d, v.z * d); }
+    Vec3 operator*(const float d) const { return Vec3(x * d, y * d, z * d); }
+    friend Vec3 operator*(const float d, const Vec3 &v) { return Vec3(v.x * d, v.y * d, v.z * d); }
 
     // 点乘
     float dot(const Vec3 &v) const { return x * v.x + y * v.y + z * v.z; }

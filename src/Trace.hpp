@@ -7,10 +7,13 @@
 #include <memory>
 
 // 光线与场景中的所有物体的相交判断
-Vec3 trace(const Ray &r, const std::vector<std::unique_ptr<Object>> &objects, const std::shared_ptr<Plane> light, const int sourceIndex);
+Vec3 trace(const Ray &r, const std::vector<std::unique_ptr<Object>> &objects, const std::shared_ptr<Plane> light);
 
 // 光线与非光源的任意物体相交判断
 bool traceLight(const Ray &r, const std::vector<std::unique_ptr<Object>> &objects);
+
+// 暂时从 trace 中取出 返回光线的辐射率
+float radiance(const Ray &r, const std::vector<std::unique_ptr<Object>> &objects, const std::shared_ptr<Plane> light, const int sourceIndex, int depth);
 
 // 将 Vec3 类型的像素颜色存进颜色缓冲区
 void storeColor(std::vector<unsigned char> &color_buffer, Vec3 &color, const int index);
