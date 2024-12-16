@@ -15,7 +15,7 @@ public:
     Plane(const Vec3 &head, const Vec3 &right, const Vec3 &down, const float width, const float length, const Vec3 &color)
         : head(head), right(right), down(down), width(width), length(length), Object(color) {}
 
-    Vec3 getNormalVector(const Vec3 &point = Vec3(0, 0, 0)) const { return down.cross(right); } // 规定向上为正面
+    Vec3 getNormalVector(const Vec3 &point = Vec3(0, 0, 0)) const { return down.cross(right); } // 规定向上为正面 // 未作单位化
     bool intersect(const Ray &r, float &t) const
     {
         Vec3 normalVector = getNormalVector();

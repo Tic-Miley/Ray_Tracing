@@ -22,9 +22,9 @@ public:
     // 方程代入求解是否相交 通过参数返回较近的交点对应的光线时间 t
     bool intersect(const Ray &r, float &t) const
     {
-        Vec3 dir = r.dir.normalize(); // 因默认 dir^2 = 0, 故 ray.dir 需要单位化 // 保护措施 外部一般已经初始化
+        // Vec3 dir = r.dir.normalize(); // 因默认 dir^2 = 0, 故 ray.dir 需要单位化 // 保护措施 外部一般已经初始化
         Vec3 oc = r.orig - center;
-        float b = 2 * oc * dir;
+        float b = 2 * r.dir * oc;
         float c = oc * oc - radius * radius;
 
         float discriminant = b * b - 4 * c;

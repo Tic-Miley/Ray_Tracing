@@ -5,45 +5,78 @@
 #include <cmath>
 
 // 光线与场景中的所有物体的相交判断 输入光线、物体和光源坐标 并返回光线颜色 暂时使用朗伯反射模型实现效果
-Vec3 trace(const Ray &r, const std::vector<std::unique_ptr<Object>> &objects, const Vec3 &light)
+Vec3 trace(const Ray &r, const std::vector<std::unique_ptr<Object>> &objects, const std::shared_ptr<Plane> light, const int sourceIndex)
 {
-    float t = MAXf;                          // 获取最近的相交时间
-    Vec3 color(0.235294, 0.67451, 0.843137); // 背景色
+    float t = MAXf;    // 最近的相交时间
+    int hitIndex = -1; // 相交物体的索引
     // 遍历所有物体
     for (const auto &object : objects)
     {
         float dist;
         if (object->intersect(r, dist) && dist < t)
         {
-            t = dist; // 更新最近相交时间
-
-            // 暂时 每相交一次都计算光线颜色 需要后续为物体编序号
-            Vec3 point = r.orig + r.dir * t;                                                                      // 交点坐标
-            Vec3 normalVector = object->getNormalVector(point);                                                   // 法向量
-            Vec3 lightVector = (light - point).normalize();                                                       // 光源方向
-            Vec3 viewVector = (r.orig - point).normalize();                                                       // 照相机方向
-            Vec3 reflectVector = (normalVector * 2.0f * lightVector.dot(normalVector) - lightVector).normalize(); // 反射光线方向
-
-            Vec3 ambient = object->color * 0.1f; // 环境光
-
-            float diff = std::max(0.0f, normalVector.dot(lightVector));
-            Vec3 diffuse = object->color * diff * 0.8f; // 漫反射光
-
-            float spec = pow(std::max(0.0f, viewVector.dot(reflectVector)), 5);
-            Vec3 specular = Vec3(1.0, 1.0, 1.0) * spec * 0.5f; // 反射光
-
-            color = ambient + diffuse + specular;
-
-            // 伽马校正
-            gammaCorrect(color);
+            t = dist;                 // 更新最近相交时间
+            hitIndex = object->index; // 更新相交物体的索引
         }
     }
-    return color;
+    // 为光线着色
+    if (hitIndex == -1)                     // 不与物体相交时
+        return BackgroundColor;             // 背景色
+    if (hitIndex == 0 && sourceIndex == -1) // 初始光线直接打到光源 光源索引为0
+        return Vec3(1, 1, 1);               // 光源为白色
+    if (hitIndex == 0 && sourceIndex != -1) // 取样反射光线直接打到光源
+        return objects[sourceIndex]->color; // 返回反射点颜色
+    // return Vec3(1, 1, 1);
+
+    ////路径追踪部分
+    Vec3 point = r.orig + t * r.dir;       // 交点坐标 p
+    Vec3 L_dir(0, 0, 0), L_indir(0, 0, 0); // 不满足以下两个 if 即为黑色
+    // 光源贡献
+    Vec3 x = light->head + randomf(0.0f, light->width) * light->right + randomf(0.0f, light->length) * light->down; // 在光源上取点 x 的坐标
+    Vec3 normalVecotr = objects[hitIndex]->getNormalVector(point);                                                  // 相交物体 交点处法线
+    Vec3 cosTheta = (x - point).normalize() * normalVecotr;                                                         // p->x 与 n of object 夹角
+    auto f_r = objects[hitIndex]->BRDF();                                                                           // 当前物体的 BRDF
+    if (traceLight(Ray(point, (x - point).normalize()), objects))                                                   // 若 p->x 未被遮挡
+    {
+        // 走公式
+        // Vec3 cosTheta2 = (point - x).normalize() * light->getNormalVector(); // x->p 与 n of light 夹角
+        // float distance = (x - point) * (x - point);
+        // float pdf_light = 1 / (light->width * light->length);
+
+        // L_dir = objects[hitIndex]->color * f_r() * cosTheta * cosTheta2 / distance / pdf_light;
+        L_dir = (1, 1, 1) * cosTheta;
+    }
+    // 反射贡献
+    if (randomf(0.0f, 1.0f) < P_RR) // 俄罗斯轮盘赌成功
+    {
+        // 走公式
+        Vec3 wi(randomf(-1, 1), randomf(-1, 1), randomf(-1, 1)); // 在 point 的上半球面取反射光方向 wi
+        if (wi * normalVecotr < 0)
+            wi = Vec3(0, 0, 0) - wi;
+        wi = wi.normalize();
+        float pdf_wi = 1 / (2 * PI);
+        // L_indir = trace(Ray(point, wi), objects, light, hitIndex) * f_r() * cosTheta / pdf_wi / P_RR;
+        L_indir = trace(Ray(point, wi), objects, light, hitIndex);
+    }
+    return L_dir + L_indir;
+}
+// 光线能否到达光源判断
+bool traceLight(const Ray &r, const std::vector<std::unique_ptr<Object>> &objects)
+{
+    float dist;
+    for (int i = 6; i < objects.size(); ++i) // 暂时从 6 开始 直接排除盒子 应该判断 t 的大小
+    {
+        if (objects[i]->intersect(r, dist) && dist > 0)
+            return false;
+    }
+    return true;
 }
 
 // 将 Vec3 类型的像素颜色存进颜色缓冲区
-void storeColor(std::vector<unsigned char> &color_buffer, const Vec3 &color, const int index)
+void storeColor(std::vector<unsigned char> &color_buffer, Vec3 &color, const int index)
 {
+    // gammaCorrect(color);
+
     unsigned char r = static_cast<unsigned char>(std::max(0.0f, std::min(1.0f, color.x)) * 255);
     unsigned char g = static_cast<unsigned char>(std::max(0.0f, std::min(1.0f, color.y)) * 255);
     unsigned char b = static_cast<unsigned char>(std::max(0.0f, std::min(1.0f, color.z)) * 255);
@@ -72,7 +105,7 @@ void PathTracing(Scene &scene)
             Vec3 dir = Vec3(x, y, -1).normalize(); // dir 单位化
             Ray ray(scene.camPos, dir);
 
-            Vec3 color = trace(ray, scene.objects, scene.light);
+            Vec3 color = trace(ray, scene.objects, scene.light, -1);
 
             int index = (j * scene.width + i) * 3;
             storeColor(scene.color_buffer, color, index);
