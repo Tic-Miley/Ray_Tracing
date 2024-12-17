@@ -29,9 +29,13 @@ public:
     // 设置光源
     void setLight(std::shared_ptr<Plane> lightx) { light = std::move(lightx); }
     // 设置照相机位置
-    void setCamPos(const Vec3 camPosx) { camPos = camPosx; }
+    void setCamPos(const Vec3 &camPosx) { camPos = camPosx; }
     // 打印图片 使用 stb_image_write 库
     void print(const char *filename);
     // 清除场景
-    void clear() { objects.clear(); }
+    void clear()
+    {
+        objects.clear();
+        index = 0;
+    }
 };

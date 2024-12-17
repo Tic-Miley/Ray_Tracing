@@ -15,7 +15,7 @@ const float MAXf = std::numeric_limits<float>::max();
 const Vec3 BackgroundColor = Vec3(0.235294, 0.67451, 0.843137);
 
 // 俄罗斯轮盘赌概率设置
-const float P_RR = 0.2;
+const float P_RR = 0.5;
 
 // 角度转弧度
 inline float rad(const float &deg) { return deg * PI / 180; }
@@ -43,3 +43,23 @@ inline float randomf(const float left, const float right)
     std::uniform_real_distribution<float> dist(left, right);
     return dist(gen);
 }
+
+// 进度条 输入完成进度
+inline void UpdateProgress(float rate)
+{
+    int barWidth = 70;
+
+    std::cout << "[";
+    int pos = barWidth * rate;
+    for (int i = 0; i < barWidth; ++i)
+    {
+        if (i < pos)
+            std::cout << "=";
+        else if (i == pos)
+            std::cout << ">";
+        else
+            std::cout << " ";
+    }
+    std::cout << "] " << int(rate * 100.0) << " %\r";
+    std::cout.flush();
+};

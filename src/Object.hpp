@@ -32,7 +32,7 @@ public:
     {
         if (material == DIFFUSE)
             return []() -> float
-            { return 0.9f / (2 * PI); };
+            { return 0.6f / (2 * PI); };
         else
             return []() -> float
             { return 1.0f; };
