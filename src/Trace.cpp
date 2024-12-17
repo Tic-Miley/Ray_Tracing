@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cmath>
 
-// 光线与场景中的所有物体的相交判断 输入光线、物体和光源坐标 并返回光线颜色 暂时使用朗伯反射模型实现效果
+// 光线与场景中的所有物体的相交判断 输入光线、物体和光源坐标 并返回光线颜色 路径追踪主函数
 Vec3 trace(const Ray &r, const Scene &scene)
 {
     float t = MAXf;    // 最近的相交时间
@@ -41,7 +41,7 @@ Vec3 trace(const Ray &r, const Scene &scene)
     {
         // 走公式
         float cosTheta2 = (point - x).normalize() * light->getNormalVector(); // x->p 与 n of light 夹角
-        float distance = sqrt((x - point) * (x - point));
+        float distance = sqrt((x - point) * (x - point));                     // 不应开方 暂时凑参
         float pdf_light = 1 / (light->width * light->length);
 
         L_dir = hitObject->color * cosTheta * cosTheta2 * (f_r() * 2 * PI) / distance / pdf_light;
@@ -88,10 +88,12 @@ void storeColor(std::vector<unsigned char> &color_buffer, Vec3 &color, const int
     color_buffer[index + 2] = b;
 }
 
-// 光线追踪主函数 生成光线
+// 渲染主函数 生成光线 存储颜色
 void PathTracing(Scene &scene)
 {
     Vec3 color(0, 0, 0);
+    int sqrtSSP = 32;
+    int ssp = sqrtSSP * sqrtSSP;
     for (int j = 0; j < scene.height; j++)
     {
         for (int i = 0; i < scene.width; i++)
@@ -99,24 +101,27 @@ void PathTracing(Scene &scene)
             color.clear();
             // 生成光线 ray 每个像素生成一条光线
             // 将坐标归一化到 [-1,1]
-            float x = 2.0 * (i + 0.5) / scene.width - 1.0;
-            float y = -2.0 * (j + 0.5) / scene.height + 1.0;
-            // 将坐标缩放到 z=-1 平面
-            float scale = std::tan(rad(scene.visualAngle / 2.0));         // 二分视角的正切
-            float ratio = static_cast<float>(scene.width) / scene.height; // 屏幕的宽高比
-            x = x * scale * ratio;                                        // 按比例放大 x
-            y = y * scale;
-            Vec3 dir = Vec3(x, y, -1).normalize(); // dir 单位化
-            Ray ray(scene.camPos, dir);
-
-            int epp = 512;
-            for (int i = 0; i < epp; ++i)
-                color = color + trace(ray, scene) / epp;
+            for (int a = 0; a < sqrtSSP; a++)
+            {
+                for (int b = 0; b < sqrtSSP; b++)
+                {
+                    float x = 2.0 * (i + 0.03125 * a) / scene.width - 1.0;
+                    float y = -2.0 * (j + 0.03125 * b) / scene.height + 1.0;
+                    // 将坐标缩放到 z=-1 平面
+                    float scale = std::tan(rad(scene.visualAngle / 2.0));         // 二分视角的正切
+                    float ratio = static_cast<float>(scene.width) / scene.height; // 屏幕的宽高比
+                    x = x * scale * ratio;                                        // 按比例放大 x
+                    y = y * scale;
+                    Vec3 dir = Vec3(x, y, -1).normalize(); // dir 单位化
+                    Ray ray(scene.camPos, dir);
+                    color = color + trace(ray, scene) / ssp;
+                }
+            }
 
             int index = (j * scene.width + i) * 3;
             storeColor(scene.color_buffer, color, index);
 
-            if (index % 1000 == 0)
+            if (index % 2000 == 0)
                 std::cout << "=";
         }
     }

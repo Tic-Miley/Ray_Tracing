@@ -1,6 +1,7 @@
 // 主函数
 
 #include "Trace.hpp"
+#include <chrono>
 
 inline void creatObjects(Scene &scene)
 {
@@ -29,17 +30,22 @@ inline void creatObjects(Scene &scene)
     // 光源和相机
     auto light = std::make_shared<Plane>(Vec3(7, 50, -107), Vec3(0, 0, -1), Vec3(-1, 0, 0), 6, 14, Vec3(1, 1, 1));
     scene.setLight(light);
-    scene.setCamPos(Vec3(0, 25, -70));
+    scene.setCamPos(Vec3(0, 25, -50));
 }
 
 // 命令为 main <filename>
 int main(int argc, const char *argv[])
 {
-    Scene scene(500, 500);
+    Scene scene(800, 800);
 
     creatObjects(scene);
 
+    auto start = std::chrono::high_resolution_clock::now();
     PathTracing(scene);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << std::endl
+              << "Running time is: " << duration.count() / 1000 << " milliseconds." << std::endl;
 
     const char *filename = "../image/output.png";
     if (argc > 1)

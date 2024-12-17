@@ -12,10 +12,11 @@
 const float MAXf = std::numeric_limits<float>::max();
 
 // 背景色
-const Vec3 BackgroundColor = Vec3(0.235294, 0.67451, 0.843137);
+// const Vec3 BackgroundColor = Vec3(0.235294, 0.67451, 0.843137);
+const Vec3 BackgroundColor = Vec3(0, 0, 0);
 
 // 俄罗斯轮盘赌概率设置
-const float P_RR = 0.5;
+const float P_RR = 0.9;
 
 // 角度转弧度
 inline float rad(const float &deg) { return deg * PI / 180; }

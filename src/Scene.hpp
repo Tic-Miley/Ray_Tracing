@@ -11,7 +11,7 @@ class Scene
 {
 public:
     int width = 400, height = 400;                // 屏幕的宽度、高度
-    float visualAngle = 90;                       // 视角默认为 90 度
+    float visualAngle = 56;                       // 视角默认为 56 度
     std::shared_ptr<Plane> light;                 // 光源位置 暂时为单点光源
     Vec3 camPos = Vec3(0, 0, 0);                  // 照相机位置
     std::vector<std::unique_ptr<Object>> objects; // 场景内的所有物体 目前仅支持球类和平面 默认 objects[0] 是光源平面 智能指针
