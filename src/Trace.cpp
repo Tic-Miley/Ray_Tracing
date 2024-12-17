@@ -3,6 +3,8 @@
 #include "Trace.hpp"
 #include <iostream>
 #include <cmath>
+#include <thread>
+#include <mutex>
 
 // 光线与场景中的所有物体的相交判断 输入光线、物体和光源坐标 并返回光线颜色 路径追踪主函数
 Vec3 trace(const Ray &r, const Scene &scene)
@@ -32,6 +34,7 @@ Vec3 trace(const Ray &r, const Scene &scene)
     const std::unique_ptr<Object> &hitObject = scene.objects[hitIndex];
     const std::shared_ptr<Plane> &light = scene.light;
     Vec3 L_dir(0, 0, 0), L_indir(0, 0, 0); // 不满足以下两个 if 即为黑色
+
     // 光源贡献
     Vec3 x = light->head + randomf(0.0f, light->width) * light->right + randomf(0.0f, light->length) * light->down; // 在光源上取点 x 的坐标
     Vec3 normalVecotr = hitObject->getNormalVector(point);                                                          // 相交物体 交点处法线
@@ -47,6 +50,7 @@ Vec3 trace(const Ray &r, const Scene &scene)
         L_dir = hitObject->color * cosTheta * cosTheta2 * (f_r() * 2 * PI) / distance / pdf_light;
         // L_dir = hitObject->color * f_r() * cosTheta * cosTheta2 / distance / pdf_light;
     }
+
     // 反射贡献
     if (randomf(0.0f, 1.0f) < P_RR) // 俄罗斯轮盘赌成功
     {
@@ -57,11 +61,13 @@ Vec3 trace(const Ray &r, const Scene &scene)
         wi = wi.normalize();
         cosTheta = wi * normalVecotr;
         float pdf_wi = 1 / (2 * PI);
+
         L_indir = trace(Ray(point, -wi), scene) * (f_r() * 1.5) * cosTheta / pdf_wi / P_RR;
-        // L_indir = trace(Ray(point, -wi), scene)*cosTheta/P_RR;
+        // L_indir = trace(Ray(point, -wi), scene) * f_r() * cosTheta / pdf_wi / P_RR;
     }
     return L_dir + L_indir;
 }
+
 // 光线能否到达光源判断
 bool traceLight(const Ray &r, const std::vector<std::unique_ptr<Object>> &objects)
 {
@@ -74,55 +80,73 @@ bool traceLight(const Ray &r, const std::vector<std::unique_ptr<Object>> &object
     return true;
 }
 
-// 将 Vec3 类型的像素颜色存进颜色缓冲区
-void storeColor(std::vector<unsigned char> &color_buffer, Vec3 &color, const int index)
-{
-    // gammaCorrect(color);
-
-    unsigned char r = static_cast<unsigned char>(std::max(0.0f, std::min(1.0f, color.x)) * 255);
-    unsigned char g = static_cast<unsigned char>(std::max(0.0f, std::min(1.0f, color.y)) * 255);
-    unsigned char b = static_cast<unsigned char>(std::max(0.0f, std::min(1.0f, color.z)) * 255);
-
-    color_buffer[index + 0] = r;
-    color_buffer[index + 1] = g;
-    color_buffer[index + 2] = b;
-}
-
-// 渲染主函数 生成光线 存储颜色
-void PathTracing(Scene &scene)
+// 多线程处理 POSIX
+void renderBlock(Scene &scene, int thread, int startRow, int endRow, std::mutex &mutex, std::vector<std::vector<unsigned char>> &color_thread)
 {
     Vec3 color(0, 0, 0);
     int sqrtSSP = 32;
     int ssp = sqrtSSP * sqrtSSP;
-    for (int j = 0; j < scene.height; j++)
+
+    for (int j = startRow; j < endRow; j++)
     {
         for (int i = 0; i < scene.width; i++)
         {
             color.clear();
-            // 生成光线 ray 每个像素生成一条光线
-            // 将坐标归一化到 [-1,1]
             for (int a = 0; a < sqrtSSP; a++)
             {
                 for (int b = 0; b < sqrtSSP; b++)
                 {
                     float x = 2.0 * (i + 0.03125 * a) / scene.width - 1.0;
                     float y = -2.0 * (j + 0.03125 * b) / scene.height + 1.0;
-                    // 将坐标缩放到 z=-1 平面
-                    float scale = std::tan(rad(scene.visualAngle / 2.0));         // 二分视角的正切
-                    float ratio = static_cast<float>(scene.width) / scene.height; // 屏幕的宽高比
-                    x = x * scale * ratio;                                        // 按比例放大 x
+                    float scale = std::tan(rad(scene.visualAngle / 2.0));
+                    float ratio = static_cast<float>(scene.width) / scene.height;
+                    x = x * scale * ratio;
                     y = y * scale;
-                    Vec3 dir = Vec3(x, y, -1).normalize(); // dir 单位化
+                    Vec3 dir = Vec3(x, y, -1).normalize();
                     Ray ray(scene.camPos, dir);
                     color = color + trace(ray, scene) / ssp;
                 }
             }
 
-            int index = (j * scene.width + i) * 3;
-            storeColor(scene.color_buffer, color, index);
+            unsigned char r = static_cast<unsigned char>(std::max(0.0f, std::min(1.0f, color.x)) * 255);
+            unsigned char g = static_cast<unsigned char>(std::max(0.0f, std::min(1.0f, color.y)) * 255);
+            unsigned char b = static_cast<unsigned char>(std::max(0.0f, std::min(1.0f, color.z)) * 255);
 
-            if (index % 2000 == 0)
-                std::cout << "=";
+            int index = ((j - startRow) * scene.width + i) * 3;
+            // 线程各自的颜色缓冲区
+            color_thread[thread][index + 0] = r;
+            color_thread[thread][index + 1] = g;
+            color_thread[thread][index + 2] = b;
         }
     }
+}
+
+// 渲染主函数 生成光线 存储颜色
+void PathTracing(Scene &scene)
+{
+    int threadCount = 12; // 12 条线程
+    // int threadCount = std::thread::hardware_concurrency();
+    int rowsPerThread = scene.height / threadCount;
+    std::vector<std::thread> threads;
+    std::mutex mutex;
+
+    int block_size = rowsPerThread * scene.width * 3;
+    std::vector<std::vector<unsigned char>> color_thread(threadCount, std::vector<unsigned char>(block_size));
+
+    for (int t = 0; t < threadCount; t++)
+    {
+        int startRow = t * rowsPerThread;
+        int endRow = (t == threadCount - 1) ? scene.height : startRow + rowsPerThread;
+        threads.emplace_back(renderBlock, std::ref(scene), t, startRow, endRow, std::ref(mutex), std::ref(color_thread));
+    }
+
+    for (auto &thread : threads)
+    {
+        thread.join();
+    }
+
+    // 从线程颜色缓冲区提取颜色
+    for (int t = 0; t < threadCount; t++)
+        for (int i = 0; i < block_size; i++)
+            scene.color_buffer[t * block_size + i] = color_thread[t][i];
 }

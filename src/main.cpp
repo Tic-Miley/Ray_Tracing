@@ -43,9 +43,9 @@ int main(int argc, const char *argv[])
     auto start = std::chrono::high_resolution_clock::now();
     PathTracing(scene);
     auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << std::endl
-              << "Running time is: " << duration.count() / 1000 << " milliseconds." << std::endl;
+              << "Running time is: " << duration.count() << " milliseconds." << std::endl;
 
     const char *filename = "../image/output.png";
     if (argc > 1)

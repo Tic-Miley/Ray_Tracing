@@ -37,12 +37,12 @@ inline void gammaCorrect(Vec3 &color)
 }
 
 // 生成随机数 [left, right] 区间中 均匀分布
+static std::random_device dev;
+static std::mt19937 gen(dev());
+static std::uniform_real_distribution<float> dist(0, 1);
 inline float randomf(const float left, const float right)
 {
-    static std::random_device dev;
-    static std::mt19937 gen(dev());
-    std::uniform_real_distribution<float> dist(left, right);
-    return dist(gen);
+    return dist(gen) * (right - left) + left;
 }
 
 // 进度条 输入完成进度

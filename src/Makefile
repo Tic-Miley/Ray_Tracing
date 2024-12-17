@@ -6,9 +6,8 @@ SRC = main.cpp Trace.cpp Scene.cpp
 
 all: $(TARGET)
 
-	# $(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
 $(TARGET): $(SRC)
-	$(CXX) -O3 -Wl,--stack,1073741824 $(CXXFLAGS) $(SRC) -o $(TARGET)
+	$(CXX) -O3 $(CXXFLAGS) $(SRC) -o $(TARGET)
 
 clean:
 	del $(TARGET).exe
