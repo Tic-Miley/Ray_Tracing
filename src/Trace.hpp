@@ -3,6 +3,7 @@
 #pragma once
 #include "Scene.hpp"
 #include "Tools.hpp"
+#include "BVH.hpp"
 #include <vector>
 #include <memory>
 

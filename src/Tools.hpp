@@ -8,8 +8,9 @@
 
 #define PI 3.141592653589793
 
-// float 类型最大值
+// float 类型最大值 最小值
 const float MAXf = std::numeric_limits<float>::max();
+const float MINf = std::numeric_limits<float>::lowest();
 
 // 背景色
 // const Vec3 BackgroundColor = Vec3(0.235294, 0.67451, 0.843137);
