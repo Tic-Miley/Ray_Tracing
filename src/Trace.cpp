@@ -7,7 +7,7 @@
 #include <mutex>
 
 // 光线与场景中的所有物体的相交判断 输入光线、物体和光源坐标 并返回光线颜色 路径追踪主函数
-Vec3 trace(const Ray &r, const Scene &scene)
+Vec3 PathTracing::trace(const Ray &r, const Scene &scene)
 {
     float t = MAXf;    // 最近的相交时间
     int hitIndex = -1; // 相交物体的索引
@@ -31,7 +31,7 @@ Vec3 trace(const Ray &r, const Scene &scene)
 
     ////路径追踪部分
     Vec3 point = r.orig + t * r.dir; // 交点坐标 p
-    const std::unique_ptr<Object> &hitObject = scene.objects[hitIndex];
+    const std::shared_ptr<Object> &hitObject = scene.objects[hitIndex];
     const std::shared_ptr<Plane> &light = scene.light;
     Vec3 L_dir(0, 0, 0), L_indir(0, 0, 0); // 不满足以下两个 if 即为黑色
 
@@ -40,7 +40,7 @@ Vec3 trace(const Ray &r, const Scene &scene)
     Vec3 normalVecotr = hitObject->getNormalVector(point);                                                          // 相交物体 交点处法线
     float cosTheta = (x - point).normalize() * normalVecotr;                                                        // p->x 与 n of object 夹角
     auto f_r = hitObject->BRDF();                                                                                   // 当前物体的 BRDF
-    if (traceLight(Ray(point, (x - point).normalize()), scene.objects))                                             // 若 p->x 未被遮挡
+    if (PathTracing::traceLight(Ray(point, (x - point).normalize()), scene.objects))                                             // 若 p->x 未被遮挡
     {
         // 走公式
         float cosTheta2 = (point - x).normalize() * light->getNormalVector(); // x->p 与 n of light 夹角
@@ -62,14 +62,14 @@ Vec3 trace(const Ray &r, const Scene &scene)
         cosTheta = wi * normalVecotr;
         float pdf_wi = 1 / (2 * PI);
 
-        L_indir = trace(Ray(point, -wi), scene) * (f_r() * 1.5) * cosTheta / pdf_wi / P_RR;
-        // L_indir = trace(Ray(point, -wi), scene) * f_r() * cosTheta / pdf_wi / P_RR;
+        L_indir = PathTracing::trace(Ray(point, -wi), scene) * (f_r() * 1.5) * cosTheta / pdf_wi / P_RR;
+        // L_indir = PathTracing::trace(Ray(point, -wi), scene) * f_r() * cosTheta / pdf_wi / P_RR;
     }
     return L_dir + L_indir;
 }
 
 // 光线能否到达光源判断
-bool traceLight(const Ray &r, const std::vector<std::unique_ptr<Object>> &objects)
+bool PathTracing::traceLight(const Ray &r, const std::vector<std::shared_ptr<Object>> &objects)
 {
     float dist;
     for (int i = 6; i < objects.size(); ++i) // 暂时从 6 开始 直接排除盒子 应该判断 t 的大小
@@ -81,10 +81,10 @@ bool traceLight(const Ray &r, const std::vector<std::unique_ptr<Object>> &object
 }
 
 // 多线程处理 POSIX
-void renderBlock(Scene &scene, int thread, int startRow, int endRow, std::mutex &mutex, std::vector<std::vector<unsigned char>> &color_thread)
+void PathTracing::renderBlock(Scene &scene, int thread, int startRow, int endRow, std::mutex &mutex, std::vector<std::vector<unsigned char>> &color_thread)
 {
     Vec3 color(0, 0, 0);
-    int sqrtSSP = 32;
+    int sqrtSSP = 4;
     int ssp = sqrtSSP * sqrtSSP;
 
     for (int j = startRow; j < endRow; j++)
@@ -104,7 +104,7 @@ void renderBlock(Scene &scene, int thread, int startRow, int endRow, std::mutex 
                     y = y * scale;
                     Vec3 dir = Vec3(x, y, -1).normalize();
                     Ray ray(scene.camPos, dir);
-                    color = color + trace(ray, scene) / ssp;
+                    color = color + PathTracing::trace(ray, scene) / ssp;
                 }
             }
 
@@ -122,7 +122,7 @@ void renderBlock(Scene &scene, int thread, int startRow, int endRow, std::mutex 
 }
 
 // 渲染主函数 生成光线 存储颜色
-void PathTracing(Scene &scene)
+void PathTracing::Render(Scene &scene)
 {
     int threadCount = 12; // 12 条线程
     // int threadCount = std::thread::hardware_concurrency();
@@ -137,7 +137,7 @@ void PathTracing(Scene &scene)
     {
         int startRow = t * rowsPerThread;
         int endRow = (t == threadCount - 1) ? scene.height : startRow + rowsPerThread;
-        threads.emplace_back(renderBlock, std::ref(scene), t, startRow, endRow, std::ref(mutex), std::ref(color_thread));
+        threads.emplace_back(PathTracing::renderBlock, std::ref(scene), t, startRow, endRow, std::ref(mutex), std::ref(color_thread));
     }
 
     for (auto &thread : threads)

@@ -5,16 +5,19 @@
 #include "Tools.hpp"
 #include "BVH.hpp"
 #include <vector>
+#include <mutex>
 #include <memory>
 
-// 光线与场景中的所有物体的相交判断
-Vec3 trace(const Ray &r, const Scene &scene);
+namespace PathTracing
+{
+    // 光线与场景中的所有物体的相交判断
+    Vec3 trace(const Ray &r, const Scene &scene);
 
-// 光线与非光源的任意物体相交判断
-bool traceLight(const Ray &r, const std::vector<std::unique_ptr<Object>> &objects);
+    // 光线与非光源的任意物体相交判断
+    bool traceLight(const Ray &r, const std::vector<std::shared_ptr<Object>> &objects);
 
-// 将 Vec3 类型的像素颜色存进颜色缓冲区
-void storeColor(std::vector<unsigned char> &color_buffer, Vec3 &color, const int index);
+    void renderBlock(Scene &scene, int thread, int startRow, int endRow, std::mutex &mutex, std::vector<std::vector<unsigned char>> &color_thread);
 
-// 光线追踪主函数
-void PathTracing(Scene &scene);
+    // 光线追踪主函数
+    void Render(Scene &scene);
+}

@@ -1,6 +1,7 @@
 // 主函数
 
 #include "Trace.hpp"
+#include "BlinnPhong.hpp"
 #include <chrono>
 
 inline void creatObjects(Scene &scene)
@@ -36,21 +37,26 @@ inline void creatObjects(Scene &scene)
 // 命令为 main <filename>
 int main(int argc, const char *argv[])
 {
-    Scene scene(800, 800);
+    Scene scene(804, 804);
 
     creatObjects(scene);
 
     auto start = std::chrono::high_resolution_clock::now();
-    PathTracing(scene);
+    // PathTracing::Render(scene);
+    RealtimeTracing::Render(scene);
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << std::endl
-              << "Running time is: " << duration.count() << " milliseconds." << std::endl;
+    std::cout << "Running time is: " << duration.count() << " milliseconds." << std::endl;
 
     const char *filename = "../image/output.png";
     if (argc > 1)
         filename = argv[1];
     scene.print(filename);
+
+    // auto objectsPtr = std::make_unique<std::vector<std::shared_ptr<Object>>>(std::move(scene.objects));
+    // auto it = std::make_shared<BVHnode>(AABB(Vec3(-50, -30, -140), Vec3(50, 80, -80)), objectsPtr);
+    // buildBVH(it);
+    // searchBVH(it);
 
     return 0;
 }
