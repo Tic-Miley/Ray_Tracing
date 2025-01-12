@@ -87,7 +87,7 @@ bool PathTracing::traceLight(const Ray &r, const std::vector<std::shared_ptr<Obj
 void PathTracing::renderBlock(Scene &scene, int thread, int startRow, int endRow, std::mutex &mutex, std::vector<std::vector<unsigned char>> &color_thread)
 {
     Vec3 color(0, 0, 0);
-    int sqrtSSP = 4;
+    int sqrtSSP = 32;
     int ssp = sqrtSSP * sqrtSSP;
 
     for (int j = startRow; j < endRow; j++)

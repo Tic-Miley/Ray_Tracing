@@ -29,6 +29,8 @@ public:
     virtual Vec3 getNormalVector(const Vec3 &point) const = 0;
     // 获取物体的中心点
     virtual Vec3 getCenter() const = 0;
+    // 获取物体的边界 物体表面最大的 x、y、z 坐标
+    virtual Vec3 getBound() const = 0;
     // 获取 BRDF 返回 lambda 函数
     std::function<float()> BRDF() const
     {

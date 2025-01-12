@@ -17,6 +17,17 @@ public:
 
     Vec3 getNormalVector(const Vec3 &point = Vec3(0, 0, 0)) const { return down.cross(right); } // 规定向上为正面 // 未作单位化
     Vec3 getCenter() const { return head + right * (width / 2) + down * (width / 2); }          // 平面中心点
+    Vec3 getBound() const
+    {
+        Vec3 p1 = head + width * right;
+        Vec3 p2 = head + length * down;
+        Vec3 p3 = p1 + length * down;
+        Vec3 ans;
+        ans.x = std::max(std::max(p1.x, p2.x), p3.x);
+        ans.y = std::max(std::max(p1.y, p2.y), p3.y);
+        ans.z = std::max(std::max(p1.z, p2.z), p3.z);
+        return ans;
+    }
     bool intersect(const Ray &r, float &t) const
     {
         Vec3 normalVector = getNormalVector();

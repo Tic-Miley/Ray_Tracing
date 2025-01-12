@@ -65,5 +65,3 @@ inline void UpdateProgress(float rate)
     std::cout << "] " << int(rate * 100.0) << " %\r";
     std::cout.flush();
 };
-
-#define getBound getCenter // 临时设置
