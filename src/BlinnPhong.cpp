@@ -40,25 +40,27 @@ Vec3 RealtimeTracing::trace(const Ray &r, const Scene &scene)
     if (PathTracing::traceLight(Ray(point, lightVector), scene.objects))
     {
         float diff = std::max(0.0f, normalVector.dot(lightVector));
-        diffuse = diffuse + object->color * diff * 0.8f / 2; // 光源中心作出一半的贡献
+        diffuse = diffuse + object->color * diff * 0.7f;
 
         float spec = pow(std::max(0.0f, viewVector.dot(reflectVector)), 3);
-        specular = specular + (1.0, 1.0, 1.0) * spec * 0.5f / 2;
+        specular = specular + (1.0, 1.0, 1.0) * spec * 0.5f;
     }
-    Vec3 x(0, 0, 0);                                                                // 光源取样点
-    Vec3 newLightHead = scene.light->head - scene.light->right + scene.light->down; // 假光源面积扩大到9倍
-    for (int i = 0; i < 9; ++i)                                                     // 对光源取样九点 实现软阴影
+    else // 打上阴影 扩大光源面积再次尝试 以实现阴影边缘柔化
     {
-        x = scene.light->head + scene.light->right * 1.5 * (i % 3) + scene.light->down * 1.5 * (static_cast<int>(i / 3));
-        lightVector = (x - point).normalize(); // 取样的光线方向
-
-        if (PathTracing::traceLight(Ray(point, lightVector), scene.objects)) // 不被光线直射的点只赋环境光
+        Vec3 x(0, 0, 0);                                                                // 光源取样点
+        Vec3 newLightHead = scene.light->head - scene.light->right + scene.light->down; // 假光源面积扩大到9倍
+        for (int i = 0; i < 9; ++i)                                                     // 对光源取样九点 实现软阴影
         {
-            float diff = pow(std::max(0.0f, normalVector.dot(lightVector)), 2);
-            diffuse = diffuse + object->color * diff * 0.8f / 18; // 漫反射光
-
-            float spec = pow(std::max(0.0f, viewVector.dot(reflectVector)), 3);
-            specular = specular + (1.0, 1.0, 1.0) * spec * 0.5f / 18; // 反射光
+            x = scene.light->head + scene.light->right * 1.5 * (i % 3) + scene.light->down * 1.5 * (static_cast<int>(i / 3));
+            lightVector = (x - point).normalize();                               // 取样的光线方向
+            if (PathTracing::traceLight(Ray(point, lightVector), scene.objects)) // 不被光线直射的点只赋环境光
+            {
+                // float diff = pow(std::max(0.0f, normalVector.dot(lightVector)), 2);
+                float diff = std::max(0.0f, normalVector.dot(lightVector));
+                diffuse = diffuse + object->color * diff * 0.7f / 9; // 漫反射光
+                float spec = pow(std::max(0.0f, viewVector.dot(reflectVector)), 3);
+                specular = specular + (1.0, 1.0, 1.0) * spec * 0.5f / 9; // 反射光
+            }
         }
     }
 
@@ -77,9 +79,9 @@ void RealtimeTracing::storeColor(std::vector<unsigned char> &color_buffer, const
     unsigned char g = static_cast<unsigned char>(std::max(0.0f, std::min(1.0f, color.y)) * 255);
     unsigned char b = static_cast<unsigned char>(std::max(0.0f, std::min(1.0f, color.z)) * 255);
 
-    color_buffer[index + 0] = r;
+    color_buffer[index + 0] = b;
     color_buffer[index + 1] = g;
-    color_buffer[index + 2] = b;
+    color_buffer[index + 2] = r; // OpenCV 储存顺序
 }
 
 // 光线追踪主函数 生成光线

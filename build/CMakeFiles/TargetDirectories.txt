@@ -1,0 +1,3 @@
+D:/Desktop/Projects/Computer_Graphics/Ray_Tracing/build/CMakeFiles/RayTracer.dir
+D:/Desktop/Projects/Computer_Graphics/Ray_Tracing/build/CMakeFiles/ALL_BUILD.dir
+D:/Desktop/Projects/Computer_Graphics/Ray_Tracing/build/CMakeFiles/ZERO_CHECK.dir

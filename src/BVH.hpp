@@ -94,12 +94,14 @@ class BVHnode
 {
 public:
     AABB Box;
-    std::shared_ptr<std::vector<std::shared_ptr<Object>>> objects;
+    std::unique_ptr<std::vector<std::shared_ptr<Object>>> objects;
     std::shared_ptr<BVHnode> left = nullptr;
     std::shared_ptr<BVHnode> right = nullptr;
 
 public:
-    BVHnode(const AABB &Box, std::shared_ptr<std::vector<std::shared_ptr<Object>>> objects,
+    BVHnode(const AABB &Box, std::unique_ptr<std::vector<std::shared_ptr<Object>>> objects)
+        : Box(Box), objects(std::move(objects)) {}
+    BVHnode(const AABB &Box, std::unique_ptr<std::vector<std::shared_ptr<Object>>> objects,
             std::shared_ptr<BVHnode> left, std::shared_ptr<BVHnode> right)
         : Box(Box), objects(std::move(objects)), left(left), right(right) {}
     bool isLeaf() const { return left == nullptr && right == nullptr; }

@@ -3,6 +3,7 @@
 #include "Trace.hpp"
 #include "BlinnPhong.hpp"
 #include <chrono>
+#include <opencv2/opencv.hpp>
 
 inline void creatObjects(Scene &scene)
 {
@@ -41,18 +42,44 @@ int main(int argc, const char *argv[])
 
     creatObjects(scene);
 
-    auto start = std::chrono::high_resolution_clock::now();
+    // auto start = std::chrono::high_resolution_clock::now();
     // PathTracing::Render(scene);
-    RealtimeTracing::Render(scene);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "Running time is: " << duration.count() << " milliseconds." << std::endl;
+    // RealtimeTracing::Render(scene);
+    // auto end = std::chrono::high_resolution_clock::now();
+    // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    // std::cout << "Running time is: " << duration.count() << " milliseconds." << std::endl;
 
-    const char *filename = "../image/output.png";
-    if (argc > 1)
-        filename = argv[1];
-    scene.print(filename);
+    // const char *filename = "../image/output.png";
+    // if (argc > 1)
+    //     filename = argv[1];
+    // scene.print(filename);
+    const int move_speed = 2;
+    int key = 0;
+    while (key != 27) // key != ESC
+    {
+        RealtimeTracing::Render(scene);
+        cv::Mat image(804, 804, CV_8UC3, scene.color_buffer.data());
+        cv::imshow("image", image);
+        key = cv::waitKey(10);
 
+        if (key == 'a') {
+            scene.camPos.x -= move_speed; // 向左移动
+        } else if (key == 'd') {
+            scene.camPos.x += move_speed; // 向右移动
+        } else if (key == 'w') {
+            scene.camPos.z -= move_speed; // 向前移动
+        } else if (key == 's') {
+            scene.camPos.z += move_speed; // 向后移动
+        } else if (key == 'j') {
+            scene.camPos.y += move_speed; // 上升
+        } else if (key == 'k') {
+            scene.camPos.y -= move_speed; // 下降
+        } else if (key == 32) {
+            scene.camPos.y += move_speed; // 上升 Space
+        } else if (key == 9) {
+            scene.camPos.y -= move_speed; // 下降 Tab
+        }
+    }
     // auto objectsPtr = std::make_unique<std::vector<std::shared_ptr<Object>>>(std::move(scene.objects));
     // auto it = std::make_shared<BVHnode>(AABB(Vec3(-50, -30, -140), Vec3(50, 80, -80)), objectsPtr);
     // buildBVH(it);
