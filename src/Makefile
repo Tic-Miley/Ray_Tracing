@@ -2,7 +2,7 @@ CXX = g++
 CXXFLAGS = -std=c++17 
 
 TARGET = RayTracer
-SRC = main.cpp Trace.cpp Scene.cpp BlinnPhong.cpp
+SRC = main.cpp Trace.cpp Scene.cpp BlinnPhong.cpp BVH.cpp
 
 all: $(TARGET)
 

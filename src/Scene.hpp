@@ -7,6 +7,8 @@
 #include "Sphere.hpp"
 #include "Plane.hpp"
 
+class BVHnode; // 向前声明 BVH.hpp 中定义的 BVHnode
+
 class Scene
 {
 public:
@@ -17,6 +19,8 @@ public:
     std::vector<std::shared_ptr<Object>> objects; // 场景内的所有物体 目前仅支持球类和平面 默认 objects[0] 是光源平面 智能指针
     std::vector<unsigned char> color_buffer;      // 储存屏幕像素点颜色 RGB 255
     int index = 0;                                // 目前新增物体的索引 索引与物体在向量中的下标一致
+    std::shared_ptr<BVHnode> root;
+
 public:
     Scene(const int width, const int height) : width(width), height(height) { color_buffer.resize(width * height * 3); }
     // 向场景中添加物体
@@ -30,6 +34,8 @@ public:
     void setLight(std::shared_ptr<Plane> lightx) { light = std::move(lightx); }
     // 设置照相机位置
     void setCamPos(const Vec3 &camPosx) { camPos = camPosx; }
+    // 设置 BVH 树根节点
+    void setBVHRoot(std::shared_ptr<BVHnode> it) { root = std::move(it); }
     // 打印图片 使用 stb_image_write 库
     void print(const char *filename);
     // 清除场景

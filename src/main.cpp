@@ -33,6 +33,13 @@ inline void creatObjects(Scene &scene)
     auto light = std::make_shared<Plane>(Vec3(7, 50, -107), Vec3(0, 0, -1), Vec3(-1, 0, 0), 6, 14, Vec3(1, 1, 1));
     scene.setLight(light);
     scene.setCamPos(Vec3(0, 25, -50));
+
+    // 构建 BVH 树
+    auto objectsPtr = std::make_shared<std::vector<std::shared_ptr<Object>>>(scene.objects);
+    auto it = std::make_shared<BVHnode>(AABB(Vec3(-50, -30, -140), Vec3(50, 80, -80)), objectsPtr);
+    buildBVH(it);
+    // searchBVH(it); // 检查树的结构用
+    scene.setBVHRoot(it);
 }
 
 // 命令为 main <filename>
@@ -53,6 +60,7 @@ int main(int argc, const char *argv[])
     // if (argc > 1)
     //     filename = argv[1];
     // scene.print(filename);
+
     const int move_speed = 2;
     int key = 0;
     while (key != 27) // key != ESC
@@ -80,10 +88,6 @@ int main(int argc, const char *argv[])
             scene.camPos.y -= move_speed; // 下降 Tab
         }
     }
-    // auto objectsPtr = std::make_unique<std::vector<std::shared_ptr<Object>>>(std::move(scene.objects));
-    // auto it = std::make_shared<BVHnode>(AABB(Vec3(-50, -30, -140), Vec3(50, 80, -80)), objectsPtr);
-    // buildBVH(it);
-    // searchBVH(it);
 
     return 0;
 }

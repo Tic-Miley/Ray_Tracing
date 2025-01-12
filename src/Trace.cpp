@@ -12,15 +12,18 @@ Vec3 PathTracing::trace(const Ray &r, const Scene &scene)
     float t = MAXf;    // 最近的相交时间
     int hitIndex = -1; // 相交物体的索引
     // 遍历所有物体
-    for (const auto &object : scene.objects)
-    {
-        float dist;
-        if (object->intersect(r, dist) && dist < t)
-        {
-            t = dist;                 // 更新最近相交时间
-            hitIndex = object->index; // 更新相交物体的索引
-        }
-    }
+    // BVH 遍历
+    traceBVH(scene.root, r, t, hitIndex);
+    // for (const auto &object : scene.objects)
+    // {
+    //     float dist;
+    //     if (object->intersect(r, dist) && dist < t)
+    //     {
+    //         t = dist;                 // 更新最近相交时间
+    //         hitIndex = object->index; // 更新相交物体的索引
+    //     }
+    // }
+    
     // 为光线着色
     if (hitIndex == -1)                          // 不与物体相交时
         return BackgroundColor;                  // 背景色

@@ -38,6 +38,25 @@ public:
 public:
     AABB(const Vec3 &min, const Vec3 &max) : min(min), max(max) {}
 
+    // AABB 盒是否与光线相交
+    bool intersect(const Ray &r, float &t)
+    {
+        float t1, t2, t3, T1, T2, T3, t_enter, t_exit;
+
+        t1 = (min.x - r.orig.x) / r.dir.x;
+        t2 = (min.y - r.orig.y) / r.dir.y;
+        t3 = (min.z - r.orig.z) / r.dir.z;
+        T1 = (max.x - r.orig.x) / r.dir.x;
+        T2 = (max.y - r.orig.y) / r.dir.y;
+        T3 = (max.z - r.orig.z) / r.dir.z;
+
+        t_enter = std::max(std::max(t1, t2), t3);
+        t_exit = std::min(std::min(T1, T2), T3);
+
+        t = t_enter;
+        return t_enter < t_exit && t_exit >= 0;
+    }
+
     // 获取要切分的坐标轴
     axis cutAxis() const
     {
@@ -75,16 +94,19 @@ public:
         {
         case xAxis:
             return [](const std::shared_ptr<Object> &object, float partition) -> bool
-            { return object->getCenter().x < partition; };
+            { return object->getBound().x < partition; };
             break;
         case yAxis:
             return [](const std::shared_ptr<Object> &object, float partition) -> bool
-            { return object->getCenter().y < partition; };
+            { return object->getBound().y < partition; };
             break;
         case zAxis:
             return [](const std::shared_ptr<Object> &object, float partition) -> bool
-            { return object->getCenter().z < partition; };
+            { return object->getBound().z < partition; };
             break;
+        default:
+            return [](const std::shared_ptr<Object> &object, float partition) -> bool
+            { return object->getBound().x < partition; };
         }
     }
 };
@@ -94,16 +116,16 @@ class BVHnode
 {
 public:
     AABB Box;
-    std::unique_ptr<std::vector<std::shared_ptr<Object>>> objects;
+    std::shared_ptr<std::vector<std::shared_ptr<Object>>> objects; // 非叶节点的物体向量仅在构造时保存一次
     std::shared_ptr<BVHnode> left = nullptr;
     std::shared_ptr<BVHnode> right = nullptr;
 
 public:
-    BVHnode(const AABB &Box, std::unique_ptr<std::vector<std::shared_ptr<Object>>> objects)
-        : Box(Box), objects(std::move(objects)) {}
-    BVHnode(const AABB &Box, std::unique_ptr<std::vector<std::shared_ptr<Object>>> objects,
-            std::shared_ptr<BVHnode> left, std::shared_ptr<BVHnode> right)
-        : Box(Box), objects(std::move(objects)), left(left), right(right) {}
+    BVHnode(const AABB &Box, std::shared_ptr<std::vector<std::shared_ptr<Object>>> objects)
+        : Box(Box), objects(objects) {};
+    // BVHnode(const AABB &Box, std::shared_ptr<std::vector<std::shared_ptr<Object>>> objects,
+    //         std::shared_ptr<BVHnode> left, std::shared_ptr<BVHnode> right)
+    //     : Box(Box), objects(std::move(objects)), left(left), right(right) {}
     bool isLeaf() const { return left == nullptr && right == nullptr; }
 };
 
@@ -111,3 +133,5 @@ public:
 void buildBVH(std::shared_ptr<BVHnode>);
 
 void searchBVH(std::shared_ptr<BVHnode>);
+
+void traceBVH(std::shared_ptr<BVHnode> it, const Ray &r, float &t, int &hitIndex);

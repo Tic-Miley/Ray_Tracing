@@ -7,5 +7,5 @@ set(OpenCV_DIR "D:\\Tic_AppData\\Code\\opencv\\build")
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-add_executable(RayTracer main.cpp Trace.cpp Scene.cpp BlinnPhong.cpp)
+add_executable(RayTracer main.cpp Trace.cpp Scene.cpp BlinnPhong.cpp BVH.cpp)
 target_link_libraries(RayTracer ${OpenCV_LIBS})

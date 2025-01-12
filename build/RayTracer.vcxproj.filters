@@ -13,6 +13,9 @@
     <ClCompile Include="D:\Desktop\Projects\Computer_Graphics\Ray_Tracing\src\BlinnPhong.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D:\Desktop\Projects\Computer_Graphics\Ray_Tracing\src\BVH.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="D:\Desktop\Projects\Computer_Graphics\Ray_Tracing\src\CmakeLists.txt" />
