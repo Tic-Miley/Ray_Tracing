@@ -3,22 +3,21 @@
 ## 使用说明
 可执行文件 `RayTracer.exe` 在 `.\build\Release\`，此外在主文件夹中有一份拷贝。
 **指令使用方法**为：
-1. `RayTracer.exe image <path>`，该指令将实现路径追踪效果，生成一张图片。参数为：每像素取样 SSP = 1024，俄罗斯轮盘赌存活概率 P_RR = 90\%，该参数渲染效果较好，一次渲染时间在 20 分钟左右。
-2. `RayTracer.exe video`，该指令将实现实时渲染效果，创建一个窗口展示内容，可以通过键盘的 w, a, s, d 等控制视点的移动。
+1. `RayTracer.exe image <path>`，该指令将实现路径追踪效果，生成一张图片。参数为：每像素取样 SSP = 1024，俄罗斯轮盘赌存活概率 P_RR = 90\%，该参数渲染效果较好，一次渲染时间在 20 分钟左右。渲染效果如下：
+![](.\image\11_multiThreads.png)
+1. `RayTracer.exe video`，该指令将实现实时渲染效果，创建一个窗口展示内容，可以通过键盘的 w, a, s, d, Space, Tab 等控制视点的移动。窗口显示如下：
+![](.\screenshot\窗口显示.png)
 
-关于图像处理部分，项目使用到了 OpenCV 库，和一个开源的 C 文件 `stb_image_write.h`。]
+关于图像处理部分，项目使用到了 OpenCV 库，和一个开源的 C 文件 `stb_image_write.h`。
 
 ## 文件结构
-- Ray_Tracing：项目文件夹
-  - build：CMake 建立的文件夹
-    - Release：包含生成的可执行文件 `RayTracer.exe`
-  - include: 项目使用到的 OpenCV 库和源文件 `stb_image_write.h`
-  - src：项目的源代码
+- build：CMake 建立的文件夹
+ - Release：包含生成的可执行文件 `RayTracer.exe`
+- image：项目实现过程中实现效果的图片 
+- include：项目使用到的 OpenCV 库和源文件 `stb_image_write.h`
+- screenshot：项目实现过程中的截屏记录
+- src：项目的源代码
 - RayTracer.exe 生成的可执行文件
-- [实时渲染实现效果.md](.\实时渲染实现效果.md)：实时渲染效果，创建一个窗口展示内容，可以通过键盘的 w, a, s, d 等控制视点的移动。
-- [路径追踪实现效果.png](路径追踪实现效果.png)：路径追踪效果，生成一张图片。参数为：每像素取样 SSP = 1024，俄罗斯轮盘赌存活概率 P_RR = 90\%。
-
-![](路径追踪实现效果.png)
 
 ## 源代码组成
 - `Scene.hpp` `Scene.cpp`：定义场景，包括屏幕大小、视点坐标、像素颜色数组和物体数组等。
