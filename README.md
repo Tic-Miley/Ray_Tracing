@@ -4,9 +4,13 @@
 可执行文件 `RayTracer.exe` 在 `.\build\Release\`，此外在主文件夹中有一份拷贝。
 **指令使用方法**为：
 1. `RayTracer.exe image <path>`，该指令将实现路径追踪效果，生成一张图片。参数为：每像素取样 SSP = 1024，俄罗斯轮盘赌存活概率 P_RR = 90\%，该参数渲染效果较好，一次渲染时间在 20 分钟左右。渲染效果如下：
-![](.\image\11_multiThreads.png)
+<div align="center">
+  <img src="https://github.com/Tic-Miley/Ray_Tracing/blob/main/image/11_multiThreads.png" width="400" alt="路径追踪渲染效果">
+</div>
 1. `RayTracer.exe video`，该指令将实现实时渲染效果，创建一个窗口展示内容，可以通过键盘的 w, a, s, d, Space, Tab 等控制视点的移动。窗口显示如下：
-![](.\screenshot\窗口显示.png)
+<div align="center">
+  <img src="https://github.com/Tic-Miley/Ray_Tracing/blob/main/screenshot/%E7%AA%97%E5%8F%A3%E6%98%BE%E7%A4%BA.png" width="400" alt="实时渲染窗口截图">
+</div>
 
 关于图像处理部分，项目使用到了 OpenCV 库，和一个开源的 C 文件 `stb_image_write.h`。
 
